@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+include ( "${CMAKE_CURRENT_LIST_DIR}/driftTargets.cmake" )
+
+# This causes catkin_simple to link against these libraries
+set(drift_FOUND_CATKIN_PROJECT true)
