@@ -34,7 +34,7 @@ Building with ROS2 is optional. Instructions are [found below](https://github.co
 
 Clone the repository:
 ```
-git clone -b ros2 https://github.com/spsingh37/drift.git
+git clone -b ros2 https://github.com/UMich-CURLY/ASV_localization.git
 cd drift
 ```
 Create another directory which we will name 'build' and use cmake and make to compile an build project:
@@ -88,6 +88,12 @@ ros2 run drift_ros2 wamv_gtodom_ros2
 With GPS-based position correction:
 ```
 ros2 run drift_ros2 wamv_gps_ros2
+```
+
+**WAMV (Surface vehicle):**
+With GPS-based position correction, and IMU-based orientation correction:
+```
+ros2 run drift_ros2 wamv_gpsimu_ros2
 ```
 
 ## Run the repo with your own robots:
