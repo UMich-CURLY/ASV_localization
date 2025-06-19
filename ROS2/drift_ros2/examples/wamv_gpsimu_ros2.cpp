@@ -36,33 +36,25 @@ int main(int argc, char** argv) {
     std::string gps_topic = config["subscribers"]["gps_topic"].as<std::string>();
     auto translation_gpssrc2body = config["subscribers"]["translation_gps_source_to_body"].as<std::vector<double>>();
 
+    // Use fixed rotation from config instead of dynamic IMU-based rotation
+    std::vector<double> rotation_gpssrc2body;
+    if (config["subscribers"]["rotation_gps_source_to_body"]) {
+        rotation_gpssrc2body = config["subscribers"]["rotation_gps_source_to_body"].as<std::vector<double>>();
+        RCLCPP_INFO(node->get_logger(), "Using rotation_gps_source_to_body from config: [%f, %f, %f, %f]", 
+            rotation_gpssrc2body[0], rotation_gpssrc2body[1], rotation_gpssrc2body[2], rotation_gpssrc2body[3]);
+    } else {
+        // Fallback: use the GPS config rotation values [0.032, 0.0, 0.0, -0.999]
+        rotation_gpssrc2body = {0, 0, 0, 1};   // for Blueboats 
+        RCLCPP_INFO(node->get_logger(), "Using hardcoded GPS rotation: [%f, %f, %f, %f]", 
+            rotation_gpssrc2body[0], rotation_gpssrc2body[1], rotation_gpssrc2body[2], rotation_gpssrc2body[3]);
+    }
     // Create ROS2 subscriber
     auto ros_sub = std::make_shared<ros_wrapper::ROSSubscriber>(node);
 
-    // Temporary IMU subscriber to initialize rotation
+    // Create IMU subscriber for propagation (no longer needed for rotation initialization)
     auto qimu_and_mutex = ros_sub->AddIMUSubscriber(imu_topic);
     auto qimu = qimu_and_mutex.first;
     auto qimu_mutex = qimu_and_mutex.second;
-
-    std::vector<double> rotation_gpssrc2body;
-    {
-        RCLCPP_INFO(node->get_logger(), "Waiting for first IMU message to initialize rotation...");
-        rclcpp::Rate rate(10);
-        while (rclcpp::ok()) {
-            {
-                std::lock_guard<std::mutex> lock(*qimu_mutex);
-                if (!qimu->empty()) {
-                    auto imu_msg = qimu->front();
-                    auto q = imu_msg->get_quaternion();
-                    rotation_gpssrc2body = {q.w(), q.x(), q.y(), q.z()};
-                    RCLCPP_INFO(node->get_logger(), "Got initial IMU orientation for rotation_gpssrc2body.");
-                    break;
-                }
-            }
-            executor.spin_some();
-            rate.sleep();
-        }
-    }
 
     // Add subscriber that fuses GPS + IMU to pose measurements
     auto qpose_and_mutex = ros_sub->AddGPSIMU2PoseSubscriber(
