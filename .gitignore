@@ -46,6 +46,8 @@ ROS/drift/husky_wheel_odom
 
 build/
 lib/
+install/
+log/
 
 # VS Code
 .vscode
