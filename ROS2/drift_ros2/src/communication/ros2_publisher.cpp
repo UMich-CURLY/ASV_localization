@@ -259,7 +259,7 @@ void ROSPublisher::StartPublishingThread() {
 //   }
 // }
 void ROSPublisher::PosePublish() {
-  auto start = std::chrono::steady_clock::now();
+  //auto start = std::chrono::steady_clock::now();
   if (robot_state_queue_ptr_->empty()) {
       // RCLCPP_WARN(node_->get_logger(), "Robot state queue is empty!");
       return;
