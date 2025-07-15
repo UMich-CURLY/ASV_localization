@@ -363,10 +363,17 @@ void ROSPublisher::TwistPublish(const RobotState& state) {
 
   // Linear velocity
   Eigen::Vector3d lin_vel = state.get_world_velocity();  // This is the linear velocity
+  // Eigen::Vector3d lin_vel = state.get_body_velocity();  // This is the linear velocity
 
   twist_msg.twist.linear.x = lin_vel.x();
   twist_msg.twist.linear.y = lin_vel.y();
   twist_msg.twist.linear.z = lin_vel.z();
+
+  // Angular velocity
+  Eigen::Vector3d ang_vel = state.get_body_angular_velocity();  // This is the angular velocity in body frame
+  twist_msg.twist.angular.x = ang_vel.x();
+  twist_msg.twist.angular.y = ang_vel.y();
+  twist_msg.twist.angular.z = ang_vel.z();
 
   // Angular velocity estimation (from rotation difference)
   // if (prev_state_) {
