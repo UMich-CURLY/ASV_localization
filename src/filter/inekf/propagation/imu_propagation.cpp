@@ -149,6 +149,7 @@ bool ImuPropagation::Propagate(RobotState& state) {
                       - state.get_gyroscope_bias();    // Angular Velocity
   // std::cout << "w: " << R_imu2body_ * imu_measurement->get_angular_velocity()
   //           << std::endl;
+  state.set_body_angular_velocity(w);
   // If IMU is not installed in the center of the robot body, we need to make
   // a compensation. We used formula:
   // R_imu2body_ * a_meas = a + w x (w x t_imu2body) + bias + <ignored term>
