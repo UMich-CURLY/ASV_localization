@@ -112,6 +112,9 @@ void CorrectLeftInvariant(const Eigen::MatrixXd& Z, const Eigen::MatrixXd& H,
   int dimX = state.dimX();
   int dimTheta = state.dimTheta();
   int dimP = state.dimP();
+  // std::cout << "dimX: " << dimX << std::endl;
+  // std::cout << "dimTheta: " << dimTheta << std::endl;
+  // std::cout << "dimP: " << dimP << std::endl;
 
   // Remove bias
   bool enable_imu_bias_update = state.get_enable_imu_bias_update();
@@ -152,6 +155,8 @@ void CorrectLeftInvariant(const Eigen::MatrixXd& Z, const Eigen::MatrixXd& H,
   // Set new state
   state.set_X(X_new);
   state.set_theta(Theta_new);
+  // std::cout << "X_new: " << X_new << std::endl;
+  // std::cout << "Theta_new: " << Theta_new << std::endl;
 
   // Update Covariance
   Eigen::MatrixXd IKH = Eigen::MatrixXd::Identity(dimP, dimP) - K * H;

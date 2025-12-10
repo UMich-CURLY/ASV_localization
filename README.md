@@ -2,9 +2,7 @@
 ![all_robots](figures/drift_all_robots.gif?raw=true "Title")
 
 ## Description
-Dead Reckoning In Field Time (DRIFT) is an open-source C++ software library designed to provide accurate and high-frequency proprioceptive state estimation for a variety of mobile robot architectures. By default, DRIFT supports legged robots, differential-drive wheeled robots, full-size vehicles with shaft encoders and marine robots with a Doppler Velocity Log (DVL). Leveraging symmetry-preserving filters such as [Invariant Kalman Filtering (InEKF)](https://www.annualreviews.org/doi/10.1146/annurev-control-060117-105010), this modular library empowers roboticists and engineers with a robust and adaptable tool to estimate instantaneous local pose and velocity in diverse environments. The software is structured in a modular fashion, allowing users to define their own sensor types, and propagation and correction methods, offering a high degree of customization.
-
-Detailed documentations and tutorials can be found at [https://umich-curly.github.io/DRIFT_Website/](https://umich-curly.github.io/DRIFT_Website/).
+Dead Reckoning In Field Time (DRIFT) is an open-source C++ software library designed to provide accurate and high-frequency proprioceptive state estimation. This fork focuses exclusively on the marine robots used in our field experiments and exposes a streamlined ROS 2 interface centered around the WAM-V configurations (`wamv_gps_ros2` and `wamv_gpsimu_ros2`). The core estimator remains modular and extensible, leveraging symmetry-preserving filters such as [Invariant Kalman Filtering (InEKF)](https://www.annualreviews.org/doi/10.1146/annurev-control-060117-105010), but all robot-specific assets outside of the WAM-V marine platforms have been removed to simplify maintenance.
 
 ## Framework
 ![flow_chart](figures/flow_chart.jpg?raw=true "flow chart")
@@ -27,8 +25,8 @@ Required by header files. Download and install instructions can be found at: htt
 > ### Yaml-cpp
 Required by header files. Download and install instructions can be found at: https://github.com/jbeder/yaml-cpp.
 
-> ### ROS2 (Optional)
-Building with ROS2 is optional. Instructions are [found below](https://github.com/UMich-CURLY/drift/tree/main#4-ros).
+> ### ROS 2 (Required for WAM-V use)
+ROS 2 Humble (or newer) is required to build and run the provided marine robot nodes. See the ROS 2 section below for build instructions.
 
 # Building DRIFT library
 
@@ -57,41 +55,42 @@ Then, you can include the library in your project by adding the following line t
 find_package(drift REQUIRED)
 ```
 
-# ROS2
-## Examples
-We provide some examples in the `ROS2/drift_ros2/examples` directory. 
+# ROS 2
+The `ROS2/drift_ros2` workspace contains everything needed to run the estimator on the supported marine robots:
 
-## Building the ROS2 node
-1. Build the custom_sensor_msgs:
+- `examples/`: entry points for the `wamv_gps_ros2` and `wamv_gpsimu_ros2` nodes.
+- `config/`: launch-time YAML files describing the ROS 2 topics and estimator parameters for each WAM-V configuration.
+- `src/custom_sensor_msgs`: the ROS 2 messages used by the estimator.
 
-  ```
-  cd <PATH>/<TO>/drift/ROS2/drift_ros2/src/custom_sensor_msgs
-  colcon build --packages-select custom_sensor_msgs
-  source install/setup.bash
-  ```
-  
-2. Build the ROS2 wrapper
-  ```
-  cd ../..
-  colcon build --symlink-install
-  source install/setup.bash
-  ```
+## Building the ROS 2 workspace
+You can either run the helper script or issue the equivalent commands yourself.
 
-## Run examples
-**WAMV (Surface vehicle):**
-With Ground-truth-based position correction:
 ```
-ros2 run drift_ros2 wamv_gtodom_ros2
+./build_ros.sh
 ```
 
-**WAMV (Surface vehicle):**
-With GPS-based position correction:
+The script simply sources the repository root, builds `custom_sensor_msgs`, and then builds the rest of the workspace with `colcon build --symlink-install`. To perform these steps manually:
+
+```
+cd ROS2/drift_ros2
+colcon build --packages-select custom_sensor_msgs
+source install/setup.bash
+colcon build --symlink-install
+source install/setup.bash
+```
+
+## Run the WAM-V examples
+**WAM-V (GPS + IMU fusion)**
+```
+ros2 run drift_ros2 wamv_gpsimu_ros2
+```
+
+**WAM-V (GPS-only correction)**
 ```
 ros2 run drift_ros2 wamv_gps_ros2
 ```
 
-## Run the repo with your own robots:
-Please refer to the tutorial here: https://umich-curly.github.io/DRIFT_Website/tutorials/.
+Both nodes expose their estimator settings through the YAML files found in `config/wamv_gpsimu_ros2` and `config/wamv_gps_ros2` (and the mirrored ROS 2 communication YAML in `ROS2/drift_ros2/config`). Adjust these files to suit your sensors or deployment environment.
 
 # Contact Estimation
 The contact estimation and the contact data set can be found in https://github.com/UMich-CURLY/deep-contact-estimator.

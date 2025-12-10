@@ -1,27 +1,19 @@
 #!/bin/bash
-#
-# ROS2 generates the necessary C++ files for your custom ROS msg/srv.
-# Usage: ./gencpp.sh [namespace]
+set -euo pipefail
 
-echo "Building custom_sensor_msgs for ROS2"
+WS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ROS2/drift_ros2"
 
-MSG_NAMESPACE=custom_sensor_msgs
-MSG_PATH=./ROS2/drift/msg
-MSG_HEADER_OUTPUT_PATH=./ROS2/drift/include/$MSG_NAMESPACE/
+if [[ ! -d "${WS_DIR}" ]]; then
+  echo "Unable to find ROS2/drift_ros2 workspace."
+  exit 1
+fi
 
-# Ensure the include directory exists
-mkdir -p $MSG_HEADER_OUTPUT_PATH
+echo "[drift_ros2] Building custom_sensor_msgs..."
+pushd "${WS_DIR}" >/dev/null
+colcon build --packages-select custom_sensor_msgs
+source install/setup.bash
 
-# Process each msg and generate code
-for file in $MSG_PATH/*.msg
-do
-  if [[ -f $file ]]
-  then
-    echo "Processing $file"
-    ros2 pkg create --build-type ament_cmake --dependencies std_msgs custom_sensor_msgs
-
-    # Ensure that rosidl generates code for the message
-    colcon build --packages-select custom_sensor_msgs
-  fi
-done
-
+echo "[drift_ros2] Building full workspace..."
+colcon build --symlink-install
+echo "[drift_ros2] Build complete. Source ${WS_DIR}/install/setup.bash to use the nodes."
+popd >/dev/null

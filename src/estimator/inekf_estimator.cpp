@@ -101,10 +101,10 @@ void InekfEstimator::RunOnce() {
   // std::cout << "inekf_estimator RunOnce......................................................................: " << std::endl;
   // Correct
   for (auto& correction : corrections_) {
-    std::cout << "Inside auto& correction......................................................................: " << std::endl;
+    // std::cout << "Inside auto& correction......................................................................: " << std::endl;
     // std::cout << "correction.get(): " << correction.get() << std::endl;
     if (correction.get()->Correct(state_)) {
-      std::cout << "Correction done......................................................................: " << std::endl;
+      // std::cout << "Correction done......................................................................: " << std::endl;
       new_pose_ready_ = true;
     }
   }
@@ -239,6 +239,14 @@ void InekfEstimator::add_position_correction(
   std::shared_ptr<Correction> correction = std::make_shared<PositionCorrection>(
       buffer_ptr, buffer_mutex_ptr, error_type_, yaml_filepath);
   corrections_.push_back(correction);
+}
+
+void InekfEstimator::add_pose_correction(
+  OdomQueuePtr buffer_ptr, std::shared_ptr<std::mutex> buffer_mutex_ptr,
+  const std::string& yaml_filepath) {
+std::shared_ptr<Correction> correction = std::make_shared<PoseCorrection>(
+    buffer_ptr, buffer_mutex_ptr, error_type_, yaml_filepath);
+corrections_.push_back(correction);
 }
 
 const bool InekfEstimator::is_enabled() const { return enabled_; }

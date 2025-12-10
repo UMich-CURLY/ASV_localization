@@ -1,121 +1,54 @@
-# DRIFT: Dead Reckoning In Field Time
-<!-- ![all_robots](figures/drift_all_robots.gif?raw=true "Title") -->
+# DRIFT Marine ROS 2 Wrapper
 
 ## Description
-DRIFT is a real-time symmetry-preserving propioceptive state estimation framework. The current implementation is based on the [Invariant Kalman Filtering (InEKF)](https://www.annualreviews.org/doi/10.1146/annurev-control-060117-105010). By default, DRIFT supports legged robots, differential-drive wheeled robots, full-size vehicles with shaft encoders and marine robots with Doppler Velocity Log (DVL). 
+Dead Reckoning In Field Time (DRIFT) is a symmetry-preserving proprioceptive state estimation framework built around the Invariant Extended Kalman Filter (InEKF). This trimmed documentation focuses entirely on the WAM-V marine robots that we currently operate and describes the ROS 2 wrapper that exposes the estimator to those platforms.
 
-DRIFT is designed to be modular and easy to expand to different platforms. It can be used as a standalone C++ library. Alternatively, we provide a ROS1 wrapper for easy communication between sensors. 
+## Dependencies
+- **C++17 compiler** with threading support.
+- **Eigen 3.1+**, **yaml-cpp**, and **Boost** for the core estimator.
+- **ROS 2 Humble (or newer)** to build and run the WAM-V nodes.
 
-<!-- ## Framework
-![flow_chart](figures/flow_chart.jpg?raw=true "flow chart") -->
-
-## Run Time Analysis
-We perform runtime evaluations using a personal laptop with an Intel i5-11400H CPU and an NVIDIA Jetson AGX Xavier (CPU). DRIFT can operate at an extremely high frequency using CPU-only computation, even on the resourced-constrained Jetson AGX Xavier. For the optional contact estimator, the inference speed on an NVIDIA RTX 3090 GPU is approximately 1100 Hz, and the inference speed on a Jetson AGX Xavier (GPU) is around 830 Hz after TensorRT optimization.
-
-<!-- ![run_time](figures/run_time.png?raw=true "run time") -->
-
-# Dependencies
-We have tested the library in **Ubuntu 20.04** and **22.04**, but it should be easy to compile in other platforms.
-
-> ### C++17 Compiler
-We use the threading functionalities of C++17.
-
-
-> ### Eigen3
-Required by header files. Download and install instructions can be found at: http://eigen.tuxfamily.org. **Requires at least 3.1.0**.
-
-> ### Yaml-cpp
-Required by header files. Download and install instructions can be found at: https://github.com/jbeder/yaml-cpp.
-
-> ### ROS1 (Optional)
-Building with ROS1 is optional. Instructions are [found below](https://github.com/UMich-CURLY/drift/tree/main#4-ros).
-
-# Building DRIFT library
-
-Clone the repository:
+## Building the core library
 ```
-git clone https://github.com/UMich-CURLY/drift.git
-```
-Create another directory which we will name 'build' and use cmake and make to compile an build project:
-
-```
-mkdir build
-cd build
+git clone -b ros2 https://github.com/spsingh37/drift.git
+cd drift
+mkdir build && cd build
 cmake ..
 make -j4
+sudo make install   # optional
 ```
 
-## Install the library
-After building the library, you can install the library to the system. This will allow other projects to find the library without needing to specify the path to the library. 
+## ROS 2 usage
+The ROS 2 workspace lives in `ROS2/drift_ros2`. Build everything (including the custom message package) via:
 
 ```
-sudo make install
-```
-Then, you can include the library in your project by adding the following line to your CMakeLists.txt file:
-```
-find_package(drift REQUIRED)
-```
-
-# ROS
-## Examples
-We provide several examples in the `ROS/examples` directory. 
-
-## Building the ROS1 node
-1. Add `/ROS/drift` to the `ROS_PACKAGE_PATH` environment variable. Open your ~/.bashrc file in a text editor and add the following line to the end. Replace PATH/TO with the directory path to where you cloned drift:
-
-  ```
-  export ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:PATH/TO/drift/ROS/drift
-  ```
-
-  Then
-  ```
-  source ~/.bashrc
-  ```
-  
-2. Execute `build_ros.sh` script in the repository root directory:
-
-  ```
-  cd <PATH>/<TO>/drift
-  chmod +x build_ros.sh
-  ./build_ros.sh
-  ```
-
-## Run examples
-**Clearpath Husky robot:**
-```
-rosrun drift husky
+cd ROS2/drift_ros2
+colcon build --packages-select custom_sensor_msgs
+source install/setup.bash
+colcon build --symlink-install
+source install/setup.bash
 ```
 
-**Fetch robot with the gyro filter:**
+Launch one of the supported nodes:
+
 ```
-rosrun drift fetch
+ros2 run drift_ros2 wamv_gpsimu_ros2   # GPS+IMU fusion
+ros2 run drift_ros2 wamv_gps_ros2      # GPS-only correction
 ```
 
-**Full-size vehicle:**
-```
-rosrun drift neya
-```
+## Configuration
+Only the marine robot assets are retained. All estimator parameters, noise definitions, and topic mappings live under:
 
-**MIT mini-cheetah robot:**
-```
-rosrun drift mini_cheetah
-```
+- `config/wamv_gpsimu_ros2` (core estimator YAML files)
+- `config/wamv_gps_ros2`
+- `ROS2/drift_ros2/config/wamv_gpsimu_ros2` (ROS 2 communication topics)
+- `ROS2/drift_ros2/config/wamv_gps_ros2`
 
-**Girona500 (Marine robot):**
-```
-rosrun drift girona500
-```
+Adjust these files to match your sensors or deployment site.
 
-## Run the repo with your own robots:
-Please refer to the tutorial here: https://umich-curly.github.io/DRIFT_Website/tutorials/.
+## Citations
+If you use DRIFT, please cite:
 
-# Contact Estimation
-The contact estimation and the contact data set can be found in https://github.com/UMich-CURLY/deep-contact-estimator.
-
-# Citations
-If you find this work useful, please kindly cite the following papers
-
-* Tzu-Yuan Lin, Tingjun Li, Wenzhe Tong, and Maani Ghaffari. "Proprioceptive Invariant Robot State Estimation." arXiv preprint arXiv:2311.04320 (2023). (Under review for Transaction on Robotics)
 ```
 @article{lin2023proprioceptive,
   title={Proprioceptive Invariant Robot State Estimation},
@@ -123,18 +56,14 @@ If you find this work useful, please kindly cite the following papers
   journal={arXiv preprint arXiv:2311.04320},
   year={2023}
 }
-```
-* Tzu-Yuan Lin, Ray Zhang, Justin Yu, and Maani Ghaffari. "Legged Robot State Estimation using Invariant Kalman Filtering and Learned Contact Events." In Conference on robot learning. PMLR, 2021
-```
-@inproceedings{
-   lin2021legged,
-   title={Legged Robot State Estimation using Invariant Kalman Filtering and Learned Contact Events},
-   author={Tzu-Yuan Lin and Ray Zhang and Justin Yu and Maani Ghaffari},
-   booktitle={5th Annual Conference on Robot Learning },
-   year={2021},
-   url={https://openreview.net/forum?id=yt3tDB67lc5}
+
+@inproceedings{lin2021legged,
+  title={Legged Robot State Estimation using Invariant Kalman Filtering and Learned Contact Events},
+  author={Lin, Tzu-Yuan and Zhang, Ray and Yu, Justin and Ghaffari, Maani},
+  booktitle={5th Annual Conference on Robot Learning},
+  year={2021}
 }
 ```
 
-# License
-DRIFT is released under a [BSD 3-Clause License](https://github.com/UMich-CURLY/drift/blob/main/LICENSE). 
+## License
+Released under the BSD 3-Clause License.

@@ -18,13 +18,12 @@ find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(custom_sensor_msgs REQUIRED)
-find_package(trajectory_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS timer chrono)
 find_package(yaml-cpp REQUIRED)
+find_package(novatel_oem7_msgs REQUIRED) # ADDED FOR HRI
 
 message("Eigen3 include dir: ${EIGEN3_INCLUDE_DIR}")
 message("Boost include dir: ${Boost_INCLUDE_DIRS}")
@@ -59,6 +58,7 @@ add_library(drift SHARED
   ${PROJECT_SOURCE_DIR}/../../src/filter/base_propagation.cpp
   ${PROJECT_SOURCE_DIR}/../../src/filter/base_correction.cpp
   ${PROJECT_SOURCE_DIR}/../../src/filter/inekf/correction/position_correction.cpp
+  ${PROJECT_SOURCE_DIR}/../../src/filter/inekf/correction/pose_correction.cpp
   ${PROJECT_SOURCE_DIR}/../../src/filter/inekf/propagation/imu_propagation.cpp
   ${PROJECT_SOURCE_DIR}/../../src/filter/inekf/inekf.cpp
   ${PROJECT_SOURCE_DIR}/../../src/imu_filter/imu_ang_vel_ekf.cpp
@@ -75,20 +75,20 @@ add_library(ros_communication_lib SHARED
 
 
 target_link_libraries(ros_communication_lib drift)
-ament_target_dependencies(ros_communication_lib rclcpp std_msgs nav_msgs sensor_msgs geometry_msgs message_filters custom_sensor_msgs)
+ament_target_dependencies(ros_communication_lib rclcpp std_msgs nav_msgs sensor_msgs geometry_msgs message_filters novatel_oem7_msgs)
 
 # Add executable targets
-set(EXECUTABLES wamv_gtodom_ros2 wamv_gps_ros2)
+set(EXECUTABLES wamv_gps_ros2 wamv_gpsimu_ros2)
 
 foreach(exec ${EXECUTABLES})
   add_executable(${exec} ${PROJECT_SOURCE_DIR}/examples/${exec}.cpp)
   target_link_libraries(${exec} drift ros_communication_lib yaml-cpp ${LIBS})
-  ament_target_dependencies(${exec} rclcpp std_msgs nav_msgs sensor_msgs geometry_msgs message_filters custom_sensor_msgs)
+  ament_target_dependencies(${exec} rclcpp std_msgs nav_msgs sensor_msgs geometry_msgs message_filters)
   install(TARGETS ${exec} DESTINATION lib/${PROJECT_NAME})
 endforeach()
 
 # Export dependencies
-ament_export_dependencies(rclcpp std_msgs nav_msgs sensor_msgs geometry_msgs message_filters yaml-cpp custom_sensor_msgs)
+ament_export_dependencies(rclcpp std_msgs nav_msgs sensor_msgs geometry_msgs message_filters yaml-cpp)
 
 # Finalize package
 ament_package()

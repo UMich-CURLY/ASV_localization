@@ -1,0 +1,20 @@
+# Settings for position correction model
+settings:
+  correction_time_threshold: 0.3    # Threshold for time difference between the received position message 
+                                  # and current time. (sec) 
+  # X pointing forward, Y to the left, Z pointing up.
+  #OG is 0.3 sec
+
+  rotation_odom2body: [0.7071, 0, 0, 0.7071] #Tim simulation test
+  # rotation_odom2body: [0.2815 ,0 ,0 ,0.9595] # Orientation from odom to the body frame. [w, x, y, z] - OG
+  # rotation_odom2body: [0.4794, 0, 0.8776]
+  # rotation_odom2body: [1, 0, 0, 0]
+# Position noise parameters:
+noises:
+   position_std: 0.1 #5 #0.1
+   orientation_std: 0.1 #5 #0.1
+
+#Pretty good - Tim Simulation parameters
+#noises:
+#  position_std: 0.001 #5 #0.1
+#  orientation_std: 0.001 #5 #0.1

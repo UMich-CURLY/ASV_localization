@@ -58,9 +58,9 @@ bool PositionCorrection::Correct(RobotState& state) {
 
   OdomMeasurementPtr measured_position = sensor_data_buffer_ptr_->front();
   double t_diff = measured_position->get_time() - state.get_propagate_time();
-  std::cout << "t_diff: " << t_diff << std::endl;
-  std::cout << "measured_position->get_time(): " << measured_position->get_time() << std::endl;
-  std::cout << "measured_position: " << measured_position->get_transformation().block<3, 1>(0, 3) << std::endl;
+  // std::cout << "t_diff: " << t_diff << std::endl;
+  // std::cout << "measured_position->get_time(): " << measured_position->get_time() << std::endl;
+  // std::cout << "measured_position: " << measured_position->get_transformation().block<3, 1>(0, 3) << std::endl;
   // Skip measurements that are in the future
   if (t_diff >= 0) {
     sensor_data_buffer_mutex_ptr_->unlock();
@@ -87,40 +87,40 @@ bool PositionCorrection::Correct(RobotState& state) {
   }
 
   // Open the file in append mode and write the data
-  std::ofstream file("debugging_data.txt", std::ios::app);
-  if (file.is_open()) {
-    // Ensure fixed decimal format with three decimal places for positions
-    file << std::fixed << std::setprecision(6);
+  // std::ofstream file("debugging_data.txt", std::ios::app);
+  // if (file.is_open()) {
+  //   // Ensure fixed decimal format with three decimal places for positions
+  //   file << std::fixed << std::setprecision(6);
 
-    // Get time in seconds with milliseconds precision
-    double filter_time = state.get_propagate_time();
-    double measurement_time = measured_position->get_time();
+  //   // Get time in seconds with milliseconds precision
+  //   double filter_time = state.get_propagate_time();
+  //   double measurement_time = measured_position->get_time();
 
-    // Write Filter time
-    file << "Filter time: " << std::fixed << std::setprecision(6) << filter_time
-         << " ";
+  //   // Write Filter time
+  //   file << "Filter time: " << std::fixed << std::setprecision(6) << filter_time
+  //        << " ";
 
-    // Write Filter state by extracting components explicitly
-    Eigen::Vector3d filter_state = state.get_position();
-    file << "Filter state: " << std::fixed << std::setprecision(6)
-         << filter_state.x() << " " << filter_state.y() << " "
-         << filter_state.z() << "; ";
+  //   // Write Filter state by extracting components explicitly
+  //   Eigen::Vector3d filter_state = state.get_position();
+  //   file << "Filter state: " << std::fixed << std::setprecision(6)
+  //        << filter_state.x() << " " << filter_state.y() << " "
+  //        << filter_state.z() << "; ";
 
-    // Write Measurement time
-    file << "Measurement time: " << std::fixed << std::setprecision(6)
-         << measurement_time << " ";
+  //   // Write Measurement time
+  //   file << "Measurement time: " << std::fixed << std::setprecision(6)
+  //        << measurement_time << " ";
 
-    // Write Measurement state by extracting components explicitly
-    Eigen::Vector3d measurement_state
-        = measured_position->get_transformation().block<3, 1>(0, 3);
-    file << "Measurement state: " << std::fixed << std::setprecision(6)
-         << measurement_state.x() << " " << measurement_state.y() << " "
-         << measurement_state.z() << "\n";
+  //   // Write Measurement state by extracting components explicitly
+  //   Eigen::Vector3d measurement_state
+  //       = measured_position->get_transformation().block<3, 1>(0, 3);
+  //   file << "Measurement state: " << std::fixed << std::setprecision(6)
+  //        << measurement_state.x() << " " << measurement_state.y() << " "
+  //        << measurement_state.z() << "\n";
 
-    file.close();
-  } else {
-    std::cerr << "Unable to open file for writing imu data.\n";
-  }
+  //   file.close();
+  // } else {
+  //   std::cerr << "Unable to open file for writing imu data.\n";
+  // }
   // Set state time to the measurement time
   state.set_time(measured_position->get_time());
 
@@ -155,6 +155,14 @@ bool PositionCorrection::Correct(RobotState& state) {
   Z.segment(0, 3) = R.transpose()
                     * (measured_position->get_transformation().block<3, 1>(0, 3)
                        - state.get_position());
+
+  // std::cout << "Position correct...  Z/innovation: " << Z << std::endl;
+  // std::cout << "Position correct...  Z size: " << Z.size() << std::endl;
+  // std::cout << "Position correct...  H size: " << H.size() << std::endl;
+  // std::cout << "Position correct...  H: " << H << std::endl;
+  // std::cout << "Position correct...  N size: " << N.size() << std::endl;
+  // std::cout << "Position correct...  N: " << N << std::endl;
+  // std::cout << "Position correct...  covariance size: " << dimP << std::endl;
 
   // Correct state using Left Invariant EKF
   if (Z.rows() > 0) {

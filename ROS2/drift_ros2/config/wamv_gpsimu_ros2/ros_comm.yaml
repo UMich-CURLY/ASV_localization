@@ -1,0 +1,16 @@
+subscribers:
+  imu_topic: "/novatel/oem7/imu/data_raw"
+  gps_topic: "/novatel/oem7/bestgnsspos"
+  translation_gps_source_to_body: [0.0, 0.0, 0.0]
+  rotation_gps_source_to_body: [1.0, 0.0, 0.0, 0.0]  # [w, x, y, z]
+  heading_offset_deg: -170.0                        # positive CCW yaw rotation
+
+publishers:
+  pose_publish_rate: 500  # Hz
+  pose_publish_topic: "/drift/pose"
+  pose_frame: "map"
+
+  path_publish_rate: 50   # Hz
+  path_publish_topic: "/drift/path"
+
+  twist_publish_topic: "/drift/twist"

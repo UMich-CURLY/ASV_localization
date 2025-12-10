@@ -232,6 +232,24 @@ class ImuPropagation : public Propagation {
       bias_init_vec_; /**< The initialized IMU bias value in the order of
                        [gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z]. */
 
+  bool init_imu_orient_set = false;
+  Eigen::Matrix3d init_rot;
+  Eigen::Matrix3d relative_rot;
+  Eigen::Matrix3d R_imu_current;
+  Eigen::Matrix3d R_imu_rel;
+
+  // Extract yaw from relative IMU rotation
+  double yaw_imu;
+
+  // Extract roll and pitch from IEKF prediction
+  Eigen::Matrix3d R_iekf;
+  double pitch_iekf;
+  double roll_iekf;
+  Eigen::Matrix3d flip_zdown_to_zup;
+  Eigen::Vector3d euler_iekf;
+
+  // Construct new rotation matrix: roll & pitch from IEKF, yaw from IMU (relative)
+  Eigen::Matrix3d R_fused;
 };                    // End of class ImuPropagation
 }    // namespace filter::inekf
 

@@ -222,9 +222,63 @@ bool ImuPropagation::Propagate(RobotState& state) {
     }
   }
 
+  // if (!init_imu_orient_set) {
+  //   init_rot = imu_measurement->get_quaternion().toRotationMatrix();
+  //   init_imu_orient_set = true;
+  //   std::cout << "initial imu rotation set" << std::endl;
+  // }
+  // if (!init_imu_orient_set) {
+  //   // Apply 180° flip around X to convert Z-down IMU frame to Z-up
+  //   Eigen::Matrix3d flip_zdown_to_zup;
+  //   flip_zdown_to_zup = Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX());
+
+  //   init_rot = flip_zdown_to_zup * imu_measurement->get_quaternion().toRotationMatrix();
+  //   init_imu_orient_set = true;
+  //   std::cout << "Initial IMU rotation set (converted to Z-up)." << std::endl;
+// }
+
+  // Eigen::Matrix3d current_rot = imu_measurement->get_quaternion().toRotationMatrix();
+  // Eigen::Matrix3d relative_rot = init_rot.transpose() * imu_measurement->get_quaternion().toRotationMatrix();
+  // Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+
+  // // Apply same frame correction to current IMU orientation
+  // Eigen::Matrix3d flip_zdown_to_zup;
+  // flip_zdown_to_zup = Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX());
+
+  // Eigen::Matrix3d R_imu_current = flip_zdown_to_zup * imu_measurement->get_quaternion().toRotationMatrix();
+  // Eigen::Matrix3d R_imu_rel = init_rot.transpose() * R_imu_current;
+
+  // // Extract yaw from relative IMU rotation (ZYX order: yaw, pitch, roll)
+  // Eigen::Vector3d euler_imu = R_imu_rel.eulerAngles(2, 1, 0);
+  // double yaw_imu = euler_imu[0];
+
+  // // Extract pitch/roll from EKF state rotation
+  // Eigen::Vector3d euler_iekf = X_pred.block<3,3>(0,0).eulerAngles(2, 1, 0);
+  // double pitch_iekf = euler_iekf[1];
+  // double roll_iekf = euler_iekf[2];
+
+  // // Construct fused rotation
+  // Eigen::Matrix3d R_fused;
+  // R_fused = Eigen::AngleAxisd(yaw_imu, Eigen::Vector3d::UnitZ()) *
+  //           Eigen::AngleAxisd(pitch_iekf, Eigen::Vector3d::UnitY()) *
+  //           Eigen::AngleAxisd(roll_iekf, Eigen::Vector3d::UnitX());
+
+  // // Rotation matrices
+  // std::cout << "Initial IMU Rotation (init_rot):\n" << init_rot.format(CleanFmt) << "\n";
+  // std::cout << "Current IMU Rotation (R_imu_current):\n" << R_imu_current.format(CleanFmt) << "\n";
+  // std::cout << "Relative IMU Rotation (R_imu_rel):\n" << R_imu_rel.format(CleanFmt) << "\n";
+  // std::cout << "IEKF Rotation (R_iekf):\n" << R_iekf.format(CleanFmt) << "\n";
+  // std::cout << "Final Fused Rotation (R_fused):\n" << R_fused.format(CleanFmt) << "\n";
+
+  // // Euler angles
+  // std::cout << "Yaw from IMU (relative): " << yaw_imu << " rad\n";
+  // std::cout << "Pitch from IEKF: " << pitch_iekf << " rad\n";
+  // std::cout << "Roll from IEKF: " << roll_iekf << " rad\n";
   //  ------------ Update State --------------- //
   state.set_X(X_pred);
   state.set_P(P_pred);
+  // state.set_rotation(relative_rot);
+  // state.set_rotation(R_fused);
 
   return true;
 }
