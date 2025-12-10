@@ -1,1 +1,0 @@
-/home/tim/drift/ROS2/drift_ros2/build/drift_ros2/ament_cmake_environment_hooks/local_setup.sh
