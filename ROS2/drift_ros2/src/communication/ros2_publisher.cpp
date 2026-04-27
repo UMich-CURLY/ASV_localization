@@ -89,6 +89,7 @@ std::string twist_topic = config["publishers"]["twist_publish_topic"].as<std::st
 // std::string odom_topic = config["publishers"]["odom_publish_topic"].as<std::string>();
 
 pose_frame_ = config["publishers"]["pose_frame"].as<std::string>();
+base_link_frame_ = config["publishers"]["base_link_frame"].as<std::string>();
 
 pose_publish_rate_ = config["publishers"]["pose_publish_rate"].as<double>();
 path_publish_rate_ = config["publishers"]["path_publish_rate"].as<double>();
@@ -350,6 +351,22 @@ void ROSPublisher::PosePublish() {
         poses_.erase(poses_.begin(), poses_.begin() + (poses_.size() - max_path_length_));
       }
   }
+
+  // tf: map -> base_link
+  static tf2_ros::TransformBroadcaster tf_broadcaster(node_);
+  geometry_msgs::msg::TransformStamped t;
+
+  // 1. Time and Frames
+  t.header.stamp = pose_msg.header.stamp;
+  t.header.frame_id = pose_frame_;
+  t.child_frame_id = base_link_frame_;
+
+  t.transform.translation.x = pose_msg.pose.position.x;
+  t.transform.translation.y = pose_msg.pose.position.y;
+  t.transform.translation.z = pose_msg.pose.position.z;
+  t.transform.rotation = pose_msg.pose.orientation;
+
+  tf_broadcaster.sendTransform(t);
 
   // auto end = std::chrono::steady_clock::now();
   // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
