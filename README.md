@@ -6,7 +6,8 @@
 
 This repository specializes [DRIFT (Dead Reckoning In Field Time)](https://umich-curly.github.io/DRIFT_Website/) — the University of Michigan CURLY Lab's Invariant EKF (InEKF) state estimation library — for GPS-aided heading correction on an autonomous surface vehicle (ASV). DRIFT is a general-purpose, open-source C++ library for proprioceptive state estimation across legged, wheeled, and marine robots; this repo builds on it to fuse single-antenna GPS position fixes with IMU orientation in a single joint InEKF correction, evaluated on field recordings from a Blueboat ASV.
 
-Detailed documentation and tutorials for the underlying DRIFT library can be found at [https://umich-curly.github.io/DRIFT_Website/](https://umich-curly.github.io/DRIFT_Website/).
+Detailed documentation and tutorials for the underlying DRIFT library can be found at
+[https://umich-curly.github.io/DRIFT_Website/](https://umich-curly.github.io/DRIFT_Website/).
 
 ## Dependencies
 
