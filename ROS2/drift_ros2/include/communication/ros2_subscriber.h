@@ -11,10 +11,6 @@
 #include <unordered_map>
 
 #include <rclcpp/rclcpp.hpp>
-#include <message_filters/subscriber.h>
-#include <message_filters/sync_policies/approximate_time.h>
-#include <message_filters/sync_policies/exact_time.h>
-#include <message_filters/synchronizer.h>
 
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <sensor_msgs/msg/imu.hpp>
@@ -34,13 +30,6 @@ typedef std::pair<OdomQueuePtr, std::shared_ptr<std::mutex>> PositionQueuePair;
 typedef std::pair<OdomQueuePtr, std::shared_ptr<std::mutex>> OdomQueuePair;
 typedef std::pair<OdomQueuePtr, std::shared_ptr<std::mutex>> PoseQueuePair;
 
-typedef message_filters::Subscriber<sensor_msgs::msg::Imu> IMUMsgFilterT;
-typedef message_filters::Subscriber<geometry_msgs::msg::Vector3Stamped> IMUOffsetMsgFilterT;
-typedef std::shared_ptr<IMUMsgFilterT> IMUMsgFilterTPtr;
-typedef std::shared_ptr<IMUOffsetMsgFilterT> IMUOffsetMsgFilterTPtr;
-typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Imu, geometry_msgs::msg::Vector3Stamped> IMUSyncPolicy;
-typedef std::shared_ptr<message_filters::Synchronizer<IMUSyncPolicy>> IMUSyncPtr;
-
 typedef std::queue<std::shared_ptr<NavSatMeasurement<double>>> GPSNavSatQueue;
 typedef std::shared_ptr<GPSNavSatQueue> GPSNavSatQueuePtr;
 typedef std::pair<GPSNavSatQueuePtr, std::shared_ptr<std::mutex>> GPSNavSatQueuePair;
@@ -53,13 +42,16 @@ public:
     ~ROSSubscriber();
 
     IMUQueuePair AddIMUSubscriber(const std::string& topic_name);
+    void SetWorldAlignmentYaw(double yaw_rad);
+    void SetReferencePosition(double lat_deg, double lon_deg, double alt_m);
     PositionQueuePair AddGPS2PositionSubscriber(const std::string& topic_name,
                                                 const std::vector<double>& translation_gpssrc2body,
                                                 const std::vector<double>& rotation_gpssrc2body);
     PoseQueuePair AddGPSIMU2PoseSubscriber(const std::string& gps_topic_name,
                                            const std::string& imu_topic_name,
                                            const std::vector<double>& translation_gpssrc2body,
-                                           const std::vector<double>& rotation_gpssrc2body);
+                                           const std::vector<double>& rotation_gpssrc2body,
+                                           const std::vector<double>& rotation_imu2body);
     PositionQueuePair AddOdom2PositionSubscriber(const std::string& topic_name,
                                                  const std::vector<double>& translation_odomsrc2body,
                                                  const std::vector<double>& rotation_odomsrc2body);
@@ -115,7 +107,6 @@ private:
 
     std::vector<OdomQueuePtr> pose_queue_list_;
 
-    std::vector<IMUSyncPtr> imu_sync_list_;
     std::vector<std::shared_ptr<std::mutex>> mutex_list_;
     std::unordered_map<int, OdomMeasurementPtr> prev_odom_map_;
     Eigen::Matrix4d odom_src_to_body_;
@@ -131,7 +122,7 @@ private:
     std::shared_ptr<Eigen::Quaterniond> initial_orientation = std::make_shared<Eigen::Quaterniond>();
     bool initial_orientation_set = false;
 
-
+    Eigen::Quaterniond world_alignment_ = Eigen::Quaterniond::Identity();
 
     rclcpp::executors::MultiThreadedExecutor executor;
 
@@ -142,4 +133,3 @@ private:
 } // namespace ros_wrapper
 
 #endif
-

@@ -216,31 +216,6 @@ InekfEstimator::add_imu_ang_vel_ekf(
           imu_filter_.get()->get_filtered_imu_data_buffer_mutex_ptr()};
 }
 
-// void InekfEstimator::add_legged_kinematics_correction(
-//     LeggedKinQueuePtr buffer_ptr, std::shared_ptr<std::mutex> buffer_mutex_ptr,
-//     const std::string& yaml_filepath) {
-//   std::shared_ptr<Correction> correction
-//       = std::make_shared<LeggedKinematicsCorrection>(
-//           buffer_ptr, buffer_mutex_ptr, error_type_, yaml_filepath);
-//   corrections_.push_back(correction);
-// }
-
-// void InekfEstimator::add_velocity_correction(
-//     VelocityQueuePtr buffer_ptr, std::shared_ptr<std::mutex> buffer_mutex_ptr,
-//     const std::string& yaml_filepath) {
-//   std::shared_ptr<Correction> correction = std::make_shared<VelocityCorrection>(
-//       buffer_ptr, buffer_mutex_ptr, error_type_, yaml_filepath);
-//   corrections_.push_back(correction);
-// }
-
-void InekfEstimator::add_position_correction(
-    OdomQueuePtr buffer_ptr, std::shared_ptr<std::mutex> buffer_mutex_ptr,
-    const std::string& yaml_filepath) {
-  std::shared_ptr<Correction> correction = std::make_shared<PositionCorrection>(
-      buffer_ptr, buffer_mutex_ptr, error_type_, yaml_filepath);
-  corrections_.push_back(correction);
-}
-
 void InekfEstimator::add_pose_correction(
   OdomQueuePtr buffer_ptr, std::shared_ptr<std::mutex> buffer_mutex_ptr,
   const std::string& yaml_filepath) {

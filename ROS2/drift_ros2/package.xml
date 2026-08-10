@@ -3,7 +3,7 @@
   <name>drift_ros2</name>
   <version>0.1.0</version>
   <description>ROS 2 package for integrating drift library with ROS 2</description>
-  <maintainer email="your.email@example.com">Your Name</maintainer>
+  <maintainer email="tlazousk@umich.edu">Tsimafei Lazouski</maintainer>
   <license>Apache-2.0</license>
 
   <!-- Build system -->
@@ -11,32 +11,21 @@
 
   <!-- Dependencies required at build time -->
   <build_depend>rclcpp</build_depend>
-  <build_depend>std_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
-  <build_depend>message_filters</build_depend>
-  <build_depend>custom_sensor_msgs</build_depend>
-  <build_depend>trajectory_msgs</build_depend>
-  <build_depend>rosidl_default_generators</build_depend>
   <build_depend>yaml-cpp</build_depend>
   <build_depend>Eigen3</build_depend>
   <build_depend>Boost</build_depend>
-  <build_depend>drift</build_depend>
 
   <!-- Dependencies required at runtime -->
   <exec_depend>rclcpp</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <exec_depend>message_filters</exec_depend>
-  <exec_depend>custom_sensor_msgs</exec_depend>
-  <exec_depend>trajectory_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>yaml-cpp</exec_depend>
   <exec_depend>Eigen3</exec_depend>
   <exec_depend>Boost</exec_depend>
-  <exec_depend>drift</exec_depend>
 
   <!-- Export dependencies -->
   <export>

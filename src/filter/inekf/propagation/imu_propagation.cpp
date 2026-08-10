@@ -147,9 +147,9 @@ bool ImuPropagation::Propagate(RobotState& state) {
   // Rotate imu frame to align it with the body frame and remove bias:
   Eigen::Vector3d w = R_imu2body_ * imu_measurement->get_angular_velocity()
                       - state.get_gyroscope_bias();    // Angular Velocity
+  state.set_body_angular_velocity(w);
   // std::cout << "w: " << R_imu2body_ * imu_measurement->get_angular_velocity()
   //           << std::endl;
-  state.set_body_angular_velocity(w);
   // If IMU is not installed in the center of the robot body, we need to make
   // a compensation. We used formula:
   // R_imu2body_ * a_meas = a + w x (w x t_imu2body) + bias + <ignored term>
@@ -576,7 +576,8 @@ bool ImuPropagation::set_initial_state(RobotState& state) {
 
   state.set_rotation(R0);
   state.set_position(p0);
-  state.set_body_angular_velocity(imu_measurement->get_angular_velocity());
+  state.set_body_angular_velocity(
+      R_imu2body_ * imu_measurement->get_angular_velocity() - bg0_);
 
   // Set the initial bias
   state.set_gyroscope_bias(bg0_);

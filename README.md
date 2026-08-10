@@ -1,111 +1,77 @@
-# DRIFT: Dead Reckoning In Field Time
+# ASV Localization: GPS-Aided Heading Correction for DRIFT
+
 ![all_robots](figures/drift_all_robots.gif?raw=true "Title")
 
 ## Description
-Dead Reckoning In Field Time (DRIFT) is an open-source C++ software library designed to provide accurate and high-frequency proprioceptive state estimation for a variety of mobile robot architectures. By default, DRIFT supports legged robots, differential-drive wheeled robots, full-size vehicles with shaft encoders and marine robots with a Doppler Velocity Log (DVL). Leveraging symmetry-preserving filters such as [Invariant Kalman Filtering (InEKF)](https://www.annualreviews.org/doi/10.1146/annurev-control-060117-105010), this modular library empowers roboticists and engineers with a robust and adaptable tool to estimate instantaneous local pose and velocity in diverse environments. The software is structured in a modular fashion, allowing users to define their own sensor types, and propagation and correction methods, offering a high degree of customization.
 
-Detailed documentations and tutorials can be found at [https://umich-curly.github.io/DRIFT_Website/](https://umich-curly.github.io/DRIFT_Website/).
+This repository specializes [DRIFT (Dead Reckoning In Field Time)](https://umich-curly.github.io/DRIFT_Website/) — the University of Michigan CURLY Lab's Invariant EKF (InEKF) state estimation library — for GPS-aided heading correction on an autonomous surface vehicle (ASV). DRIFT is a general-purpose, open-source C++ library for proprioceptive state estimation across legged, wheeled, and marine robots; this repo builds on it to fuse single-antenna GPS position fixes with IMU orientation in a single joint InEKF correction, evaluated on field recordings from a Blueboat ASV.
 
-## Framework
-![flow_chart](figures/flow_chart.jpg?raw=true "flow chart")
+Detailed documentation and tutorials for the underlying DRIFT library can be found at [https://umich-curly.github.io/DRIFT_Website/](https://umich-curly.github.io/DRIFT_Website/).
 
-## Run Time Analysis
-We perform runtime evaluations using a personal laptop with an Intel i5-11400H CPU and an NVIDIA Jetson AGX Xavier (CPU). DRIFT can operate at an extremely high frequency using CPU-only computation, even on the resourced-constrained Jetson AGX Xavier. For the optional contact estimator, the inference speed on an NVIDIA RTX 3090 GPU is approximately 1100 Hz, and the inference speed on a Jetson AGX Xavier (GPU) is around 830 Hz after TensorRT optimization.
+## Dependencies
 
-![run_time](figures/run_time.png?raw=true "run time")
-
-# Dependencies
-We have tested the library in **Ubuntu 20.04** and **22.04**, but it should be easy to compile in other platforms.
+Tested on **Ubuntu 22.04** with **ROS 2 Humble**.
 
 > ### C++17 Compiler
-We use the threading functionalities of C++17.
-
+Required for the library's threading functionality.
 
 > ### Eigen3
-Required by header files. Download and install instructions can be found at: http://eigen.tuxfamily.org. **Requires at least 3.1.0**.
+Required by header files. Install instructions: http://eigen.tuxfamily.org. **Requires at least 3.1.0**.
 
 > ### Yaml-cpp
-Required by header files. Download and install instructions can be found at: https://github.com/jbeder/yaml-cpp.
+Required by header files. Install instructions: https://github.com/jbeder/yaml-cpp.
 
-> ### ROS2 (Optional)
-Building with ROS2 is optional. Instructions are [found below](https://github.com/UMich-CURLY/drift/tree/main#4-ros).
+> ### ROS 2
+The estimator library itself is ROS-independent, but the `blueboat_gps_ros2` node in `ROS2/drift_ros2` requires ROS 2. Install [ROS 2 Humble](https://docs.ros.org/en/humble/Installation.html) if you don't have it.
 
-# Building DRIFT library
+## Building
 
-Clone the repository:
-```
-git clone -b ros2 https://github.com/UMich-CURLY/ASV_localization.git
-cd drift
-```
-Create another directory which we will name 'build' and use cmake and make to compile an build project:
+Clone and build both the core `drift` library and the `drift_ros2` wrapper from the repo root:
 
-```
-mkdir build
-cd build
-cmake ..
-make -j4
+```bash
+git clone https://github.com/UMich-CURLY/ASV_localization.git
+cd ASV_localization
+source /opt/ros/humble/setup.bash
+colcon build --paths . ROS2/drift_ros2
 ```
 
-## Install the library
-After building the library, you can install the library to the system. This will allow other projects to find the library without needing to specify the path to the library. 
+## Running
 
-```
-sudo make install
-```
-Then, you can include the library in your project by adding the following line to your CMakeLists.txt file (this is already done in this repo so ignore):
-```
-find_package(drift REQUIRED)
+```bash
+source install/setup.bash
+ros2 run drift_ros2 blueboat_gps_ros2
 ```
 
-# ROS2
-## Examples
-We provide some examples in the `ROS2/drift_ros2/examples` directory. 
+**Consumes:**
+- `/imu/data` — orientation (non-AHRS: raw gyroscope + accelerometer, no magnetometer correction)
+- `/imu/data_raw` — propagation (raw angular velocity + linear acceleration)
+- `/navsatfix` — GPS position
 
-## Building the ROS2 node
-1. Build the custom_sensor_msgs:
+**Publishes:**
+- `/localization/pose`
+- `/localization/twist`
+- `/localization/path`
 
-  ```
-  cd <PATH>/<TO>/drift/ROS2/drift_ros2/src/custom_sensor_msgs
-  colcon build --packages-select custom_sensor_msgs
-  source install/setup.bash
-  ```
-  
-2. Build the ROS2 wrapper
-  ```
-  cd ../..
-  colcon build --symlink-install
-  source install/setup.bash
-  ```
+Tuning lives in `config/blueboat_real/pose_correction.yaml`. 
+Additional functional parameters live in `ROS2/drift_ros2/config/blueboat_real/ros_comm.yaml`.
 
-## Run examples
-**WAMV (Surface vehicle):**
-With Ground-truth-based position correction:
+`decouple_prior_covariance` defaults to `true`: before computing the joint correction's Kalman gain, the position–attitude and position–bias blocks of the *prior* covariance are excluded from that one gain computation (the filter's stored covariance is otherwise unaffected).
+Set it `false` to run the original, unconditioned joint correction for comparison. Note, that setting when set to `false`, the pure position measurement perturbs attitude despite having no explicit dependence on it.
+
+## Repository layout
+
 ```
-ros2 run drift_ros2 wamv_gtodom_ros2
+include/, src/          Core InEKF estimator library (propagation + correction)
+ROS2/drift_ros2/         ROS 2 node, topic wiring, and per-platform config
+config/                  Filter tuning (noise values, correction settings)
+analysis_scripts/        Field-bag evaluation tooling (heading/position/twist RMSE against dual-GNSS)
 ```
 
-**WAMV (Surface vehicle):**
-With GPS-based position correction:
-```
-ros2 run drift_ros2 wamv_gps_ros2
-```
+## Citations
 
-**WAMV (Surface vehicle):**
-With GPS-based position correction, and IMU-based orientation correction:
-```
-ros2 run drift_ros2 wamv_gpsimu_ros2
-```
+This work builds on DRIFT. If you find this repository useful, please cite:
 
-## Run the repo with your own robots:
-Please refer to the tutorial here: https://umich-curly.github.io/DRIFT_Website/tutorials/.
-
-# Contact Estimation
-The contact estimation and the contact data set can be found in https://github.com/UMich-CURLY/deep-contact-estimator.
-
-# Citations
-If you find this work useful, please kindly cite the following papers
-
-* Tzu-Yuan Lin, Tingjun Li, Wenzhe Tong, and Maani Ghaffari. "Proprioceptive Invariant Robot State Estimation." arXiv preprint arXiv:2311.04320 (2023). (Under review for Transaction on Robotics)
+* Tzu-Yuan Lin, Tingjun Li, Wenzhe Tong, and Maani Ghaffari. "Proprioceptive Invariant Robot State Estimation." arXiv preprint arXiv:2311.04320 (2023). (Under review for Transactions on Robotics)
 ```
 @article{lin2023proprioceptive,
   title={Proprioceptive Invariant Robot State Estimation},
@@ -114,17 +80,17 @@ If you find this work useful, please kindly cite the following papers
   year={2023}
 }
 ```
-* Tzu-Yuan Lin, Ray Zhang, Justin Yu, and Maani Ghaffari. "Legged Robot State Estimation using Invariant Kalman Filtering and Learned Contact Events." In Conference on robot learning. PMLR, 2021
+* Tzu-Yuan Lin, Ray Zhang, Justin Yu, and Maani Ghaffari. "Legged Robot State Estimation using Invariant Kalman Filtering and Learned Contact Events." In Conference on Robot Learning. PMLR, 2021.
 ```
-@inproceedings{
-   lin2021legged,
+@inproceedings{lin2021legged,
    title={Legged Robot State Estimation using Invariant Kalman Filtering and Learned Contact Events},
    author={Tzu-Yuan Lin and Ray Zhang and Justin Yu and Maani Ghaffari},
-   booktitle={5th Annual Conference on Robot Learning },
+   booktitle={5th Annual Conference on Robot Learning},
    year={2021},
    url={https://openreview.net/forum?id=yt3tDB67lc5}
 }
 ```
 
-# License
-DRIFT is released under a [BSD 3-Clause License](https://github.com/UMich-CURLY/drift/blob/main/LICENSE). 
+## License
+
+Released under a [BSD 3-Clause License](LICENSE).

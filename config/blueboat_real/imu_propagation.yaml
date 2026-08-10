@@ -1,0 +1,20 @@
+settings:
+  static_bias_initialization: true
+  init_bias_size: 100
+  init_bias_using_orientation_est_from_imu: false
+  enable_imu_bias_update: false
+  use_imu_ori_to_init: false
+
+  # Must match the Blueboat base_link -> imu_link orientation.
+  rotation_imu2body: [0.0, 0.0, 0.0, 1.0]
+  translation_imu2body: [0.0, 0.0, 0.0]
+
+priors:
+  gyroscope_bias: [0.0, 0.0, 0.0]
+  accelerometer_bias: [0.0, 0.0, 0.0]
+
+noises:
+  gyroscope_std: 0.02
+  accelerometer_std: 0.05
+  gyroscope_bias_std: 0.003
+  accelerometer_bias_std: 0.02

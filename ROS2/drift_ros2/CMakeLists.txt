@@ -8,23 +8,25 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall  -O3 -march=native")
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_library(LIBRARY_NAME PATHS "/usr/lib/x86_64-linux-gnu" NO_DEFAULT_PATH)
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN")
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH OFF)
 
+if(DEFINED ENV{CONDA_PREFIX})
+  list(APPEND CMAKE_IGNORE_PREFIX_PATH "$ENV{CONDA_PREFIX}")
+endif()
 
 # Ensure dependencies are available
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(custom_sensor_msgs REQUIRED)
-find_package(trajectory_msgs REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(message_filters REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS timer chrono)
 find_package(yaml-cpp REQUIRED)
+get_target_property(YAML_CPP_INCLUDE_DIR yaml-cpp INTERFACE_INCLUDE_DIRECTORIES)
 
 message("Eigen3 include dir: ${EIGEN3_INCLUDE_DIR}")
 message("Boost include dir: ${Boost_INCLUDE_DIRS}")
@@ -58,7 +60,6 @@ add_library(drift SHARED
   ${PROJECT_SOURCE_DIR}/../../src/math/se_k_3.cpp
   ${PROJECT_SOURCE_DIR}/../../src/filter/base_propagation.cpp
   ${PROJECT_SOURCE_DIR}/../../src/filter/base_correction.cpp
-  ${PROJECT_SOURCE_DIR}/../../src/filter/inekf/correction/position_correction.cpp
   ${PROJECT_SOURCE_DIR}/../../src/filter/inekf/correction/pose_correction.cpp
   ${PROJECT_SOURCE_DIR}/../../src/filter/inekf/propagation/imu_propagation.cpp
   ${PROJECT_SOURCE_DIR}/../../src/filter/inekf/inekf.cpp
@@ -76,20 +77,25 @@ add_library(ros_communication_lib SHARED
 
 
 target_link_libraries(ros_communication_lib drift)
-ament_target_dependencies(ros_communication_lib rclcpp std_msgs nav_msgs sensor_msgs geometry_msgs message_filters custom_sensor_msgs)
+ament_target_dependencies(ros_communication_lib rclcpp nav_msgs sensor_msgs geometry_msgs)
+ament_export_libraries(drift ros_communication_lib)
+
+install(TARGETS drift DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS ros_communication_lib DESTINATION lib/${PROJECT_NAME})
 
 # Add executable targets
-set(EXECUTABLES wamv_gtodom_ros2 wamv_gps_ros2 wamv_gpsimu_ros2)
+set(EXECUTABLES blueboat_gps_ros2)
 
 foreach(exec ${EXECUTABLES})
   add_executable(${exec} ${PROJECT_SOURCE_DIR}/examples/${exec}.cpp)
   target_link_libraries(${exec} drift ros_communication_lib yaml-cpp ${LIBS})
-  ament_target_dependencies(${exec} rclcpp std_msgs nav_msgs sensor_msgs geometry_msgs message_filters custom_sensor_msgs)
+  ament_target_dependencies(${exec} rclcpp nav_msgs sensor_msgs geometry_msgs)
   install(TARGETS ${exec} DESTINATION lib/${PROJECT_NAME})
 endforeach()
 
 # Export dependencies
-ament_export_dependencies(rclcpp std_msgs nav_msgs sensor_msgs geometry_msgs message_filters yaml-cpp custom_sensor_msgs)
+ament_export_dependencies(rclcpp nav_msgs sensor_msgs geometry_msgs yaml-cpp)
 
 # Finalize package
 ament_package()

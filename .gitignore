@@ -1,65 +1,8 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-ROS/drift/fetch
-ROS/drift/husky
-ROS/drift/mini_cheetah
-ROS/drift/fetch_gyro_filter
-ROS/drift/deterministic_test
-ROS/drift/husky_gyro_filter
-ROS/drift/husky_odom
-ROS/drift/girona500
-ROS/drift/husky_double_imu_filter
-ROS/drift/neya
-ROS/drift/neya_gyro_filter
-ROS/drift/fetch_wheel_odom
-ROS/drift/husky_wheel_odom
-
 build/
-lib/
 install/
 log/
-
-# VS Code
-.vscode
-
-# MAC OS
-.DS_Store
-
-# logs
-log/
-log/*.txt
-log/*/*.txt
-
-
-# python 
 __pycache__/
+*.pyc
+*.db3
+*.db3-shm
+*.db3-wal

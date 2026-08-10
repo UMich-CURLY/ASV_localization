@@ -1,0 +1,44 @@
+subscribers:
+  #imu_topic: "/imu/data"
+  imu_propagation_topic: "/imu/data_raw"
+  imu_orientation_topic: "/imu/data"
+  gps_topic: "/navsatfix"
+
+  # Optional fixed ENU origin. If omitted, DRIFT uses the first GPS fix.
+  # reference_position: [42.000000000, -83.000000000, 0.0]
+
+  # Match the real blueboat base_link -> gps_link.
+  # Positive X is forward, positive Y is left, positive Z is up.
+  translation_gps_source_to_body: [-0.381, 0.3937, 0.3048]
+  rotation_gps_source_to_body: [1, 0, 0, 0]     #this should probably stay identity unless we figure out something specific
+
+estimator_configs:
+  inekf_estimator: "inekf_estimator.yaml"
+  imu_propagation: "imu_propagation.yaml"
+  pose_correction: "pose_correction.yaml"
+
+heading_correction:
+  # False: initialize once from timestamp-matched dual-GNSS and AHRS yaw.
+  # True: use manual_world_alignment_yaw_deg without waiting for /pose.
+  use_manual_world_alignment: false
+  manual_world_alignment_yaw_deg: 19.32
+
+  gps_pose_topic: "/pose"
+  initial_alignment_timeout_sec: 15.0
+  initial_alignment_max_time_difference_sec: 0.05
+  initial_alignment_sample_count: 5
+
+publishers:
+  pose_publish_rate: 100
+  pose_publish_topic: "/localization/pose"
+
+  pose_frame: "odom"
+
+  path_publish_rate: 20
+  path_publish_topic: "/localization/path"
+
+  twist_publish_topic: "/localization/twist"
+
+  twist_frame: "base_link"
+
+  enable_slip_publisher: true

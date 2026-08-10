@@ -58,12 +58,15 @@ class ROSPublisher {
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
   rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr twist_pub_;
+  std::vector<rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr> pose_alias_pubs_;
+  std::vector<rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr> twist_alias_pubs_;
   // rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
 
   rclcpp::TimerBase::SharedPtr pose_timer_;
   rclcpp::TimerBase::SharedPtr path_timer_;
 
   std::string pose_frame_;
+  std::string twist_frame_;
   uint32_t pose_seq_ = 0;
   double pose_publish_rate_;
   std::thread pose_publishing_thread_;    // Thread for pose publishing
@@ -101,4 +104,3 @@ class ROSPublisher {
 }  // namespace ros_wrapper
 
 #endif
-

@@ -1,8 +1,6 @@
 #ifndef FILTER_INEKF_CORRECTION_POSE_CORRECTION_H
 #define FILTER_INEKF_CORRECTION_POSE_CORRECTION_H
 
-#include <fstream>
-#include <iomanip>
 #include <iostream>
 
 #include "drift/filter/base_correction.h"
@@ -94,8 +92,33 @@ class PoseCorrection : public Correction {
   Eigen::Matrix3d ori_cov_;
 
   double t_diff_thres_; /**< Maximum allowed time difference for valid measurement. */
+  bool fix_z_;          /**< If true, constrain pose measurements to fixed_z_value_. */
+  double fixed_z_value_; /**< Fixed world-frame z value used when fix_z_ is true. */
 
-  std::ofstream est_pose_outfile_;
+  /**
+   * If true (default), before computing the joint 12-row correction's
+   * Kalman gain, the position-rotation and position-bias blocks of the
+   * *prior* covariance are zeroed in a local copy used for that one gain
+   * computation only: the stored state covariance 
+   * still uses the true, un-zeroed prior, so this doesn't change what the
+   * filter believes about its own uncertainty going forward, only what
+   * this one update's gain is allowed to exploit.
+   *
+   * Why: the position measurement's residual and the rotation/bias states
+   * are correlated in the prior (via propagation and prior corrections),
+   * and an unconditioned joint gain will use that correlation to let GPS
+   * position information perturb attitude. 
+   * I have found that this correlation is not a useful heading source 
+   * It degrades heading accuracy, sometimes by an order of magnitude, with no
+   * compensating benefit. Zeroing it before the gain computation removes
+   * that while leaving the correction a single batch solve with the
+   * same linearization point and same constant Jacobians.
+   *
+   * If false, the joint gain is computed from the prior covariance as-is,
+   * cross-covariance included: this is the original, unconditioned
+   * behavior, kept only for direct comparison against that baseline.
+   */
+  bool decouple_prior_covariance_;
 };
 
 }  // namespace filter::inekf

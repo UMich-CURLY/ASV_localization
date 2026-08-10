@@ -5,9 +5,9 @@ message(STATUS "PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
 
-option(BUILD_EXAMPLES "Build the examples" ON)
-option(BUILD_TESTS "Build the test files" ON)
-option(BUILD_DOC "Build Doxygen documents" ON)
+option(BUILD_EXAMPLES "Build the examples" OFF)
+option(BUILD_TESTS "Build the test files" OFF)
+option(BUILD_DOC "Build Doxygen documents" OFF)
 
 # #################################################
 # Find External Packages             #
@@ -15,6 +15,7 @@ option(BUILD_DOC "Build Doxygen documents" ON)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED)
 find_package(yaml-cpp REQUIRED)
+include(GNUInstallDirs)
 
 message("Eigen3 include dir: ${EIGEN3_INCLUDE_DIR}")
 message("Boost include dir: ${Boost_INCLUDE_DIRS}")
@@ -46,13 +47,13 @@ add_library(${LIBRARY_TARGET_NAME}
   ${PROJECT_SOURCE_DIR}/src/math/se_k_3.cpp
   ${PROJECT_SOURCE_DIR}/src/filter/base_propagation.cpp
   ${PROJECT_SOURCE_DIR}/src/filter/base_correction.cpp
-  ${PROJECT_SOURCE_DIR}/src/filter/inekf/correction/position_correction.cpp
   ${PROJECT_SOURCE_DIR}/src/filter/inekf/correction/pose_correction.cpp
   ${PROJECT_SOURCE_DIR}/src/filter/inekf/propagation/imu_propagation.cpp
   ${PROJECT_SOURCE_DIR}/src/filter/inekf/inekf.cpp
   ${PROJECT_SOURCE_DIR}/src/imu_filter/imu_ang_vel_ekf.cpp
   ${PROJECT_SOURCE_DIR}/src/measurement/measurement.cpp
 )
+target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC yaml-cpp)
 target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
@@ -110,7 +111,6 @@ endif(BUILD_DOC)
 # INSTALL LIBRARY               #
 # #################################################
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
-set(CMAKE_INSTALL_PREFIX "/usr/local")
 
 # List of H (header) library files.
 file(GLOB ESTIMATOR_HEADER_FILES ${PROJECT_SOURCE_DIR}/include/drift/estimator/*.h)
@@ -138,10 +138,10 @@ file(GLOB UTILS_HEADER_FILES ${PROJECT_SOURCE_DIR}/include/drift/utils/*.h)
 # Install the library
 install(TARGETS ${LIBRARY_TARGET_NAME}
   EXPORT ${PROJECT_NAME}Targets
-  LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
-  ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
-  RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
-  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/${LIBRARY_TARGET_NAME}"
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${LIBRARY_TARGET_NAME}"
 )
 
 # Install header files: Copying the header files to desired place

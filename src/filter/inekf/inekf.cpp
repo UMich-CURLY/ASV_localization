@@ -102,7 +102,9 @@ void CorrectRightInvariant(const Eigen::MatrixXd& Z, const Eigen::MatrixXd& H,
 // Correct Input State: Left-Invariant Observation
 void CorrectLeftInvariant(const Eigen::MatrixXd& Z, const Eigen::MatrixXd& H,
                           const Eigen::MatrixXd& N, RobotState& state,
-                          ErrorType error_type) {
+                          ErrorType error_type,
+                          const Eigen::VectorXd& decouple_group_a,
+                          const Eigen::VectorXd& decouple_group_b) {
   // Get current state estimate
   Eigen::MatrixXd X = state.get_X();
   Eigen::VectorXd Theta = state.get_theta();
@@ -135,9 +137,29 @@ void CorrectLeftInvariant(const Eigen::MatrixXd& Z, const Eigen::MatrixXd& H,
     P = (AdjInv * P * AdjInv.transpose()).eval();
   }
 
+  // Decoupled-prior gain: zero the *prior* covariance's cross-block between
+  // decouple_group_a and decouple_group_b before computing the gain only --
+  // the stored state covariance (Joseph update below) still uses the true,
+  // un-zeroed P, so this doesn't lie to the filter about its own uncertainty
+  // going forward, only about what this one gain computation is allowed to
+  // exploit. Symmetric by construction (P must stay symmetric): this blocks
+  // correlation-mediated correction in both directions between the two
+  // groups, not just one.
+  Eigen::MatrixXd P_for_gain = P;
+  if (decouple_group_a.size() == dimP && decouple_group_b.size() == dimP) {
+    for (int i = 0; i < dimP; ++i) {
+      if (decouple_group_a(i) == 0.0) continue;
+      for (int j = 0; j < dimP; ++j) {
+        if (decouple_group_b(j) == 0.0) continue;
+        P_for_gain(i, j) = 0.0;
+        P_for_gain(j, i) = 0.0;
+      }
+    }
+  }
+
   // std::cout << "mATRIX N: \n" << N;
   // Compute Kalman Gain
-  Eigen::MatrixXd PHT = P * H.transpose();
+  Eigen::MatrixXd PHT = P_for_gain * H.transpose();
   Eigen::MatrixXd S = H * PHT + N;
   Eigen::MatrixXd K = PHT * S.inverse();
   // std::cout << "Kalman gain: \n" << K;

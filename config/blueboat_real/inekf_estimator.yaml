@@ -1,0 +1,10 @@
+logger:
+  enable_pose_logger: true
+  pose_log_file: "/tmp/blueboat_gps_pose.txt"
+  vel_log_file: "/tmp/blueboat_inekf_vel.txt"
+  pose_log_rate: 10
+
+state:
+  rotation_std_value: 0.01
+  velocity_std_value: 0.01
+  position_std_value: 0.01

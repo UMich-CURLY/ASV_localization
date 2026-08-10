@@ -1,0 +1,26 @@
+settings:
+  correction_time_threshold: 0.12
+  fix_z: true
+  fixed_z_value: 0.0
+
+  # true (default): before computing the joint 12-row correction's Kalman
+  # gain, the position-rotation and position-bias blocks of the prior
+  # covariance are zeroed in a copy used for that one gain computation
+  # only. The stored state covariance is still updated from the true,
+  # un-zeroed prior afterward. Still original batch solve
+  #
+  # false: the joint gain is computed from the prior covariance (original),
+  # with cross-covariance included as unconditioned baseline.
+  decouple_prior_covariance: true
+
+noises:
+  position_std_xyz: [0.01, 0.01, 0.02]
+  orientation_std: 50.0
+  
+  # retuning these two values (in particular loosening position_std_xyz)
+  # can push heading accuracy further on some bags, but the winning
+  # combination is different per bag
+  
+  # loosening position_std_xyz often costs in decrease of position/velocity accuracy.
+  # decouple_prior_covariance above reaches comparable or better heading
+  # accuracy on most bags at these values, withno such cost

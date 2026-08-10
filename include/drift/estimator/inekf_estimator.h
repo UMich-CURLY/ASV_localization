@@ -28,8 +28,6 @@
 
 #include "drift/filter/base_correction.h"
 #include "drift/filter/base_propagation.h"
-// #include "drift/filter/inekf/correction/legged_kinematics_correction.h"
-#include "drift/filter/inekf/correction/position_correction.h"
 #include "drift/filter/inekf/correction/pose_correction.h"
 // #include "drift/filter/inekf/correction/velocity_correction.h"
 #include "drift/filter/inekf/propagation/imu_propagation.h"

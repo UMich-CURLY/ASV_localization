@@ -62,11 +62,22 @@ void CorrectRightInvariant(const Eigen::MatrixXd& Z, const Eigen::MatrixXd& H,
  * @param[in] N: measurement noise matrix
  * @param[in,out] state: Robot state
  * @param[in] error_type: Error type， RightInvariant or LeftInvariant
+ * @param[in] decouple_group_a, decouple_group_b: if both size == dimP with
+ * disjoint nonzero support, zero the *prior* covariance's cross-block between
+ * these two index groups before computing the gain only (the stored state
+ * covariance, updated afterward via the Joseph form, still uses the true
+ * prior). Since covariance is symmetric, this is necessarily bidirectional:
+ * neither group's measurement can correct the other through their prior
+ * correlation, in either direction.
  * @return None
  */
 void CorrectLeftInvariant(const Eigen::MatrixXd& Z, const Eigen::MatrixXd& H,
                           const Eigen::MatrixXd& N, RobotState& state,
-                          ErrorType error_type);
+                          ErrorType error_type,
+                          const Eigen::VectorXd& decouple_group_a
+                          = Eigen::VectorXd(),
+                          const Eigen::VectorXd& decouple_group_b
+                          = Eigen::VectorXd());
 
 
 }    // namespace filter::inekf
